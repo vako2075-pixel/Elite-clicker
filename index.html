@@ -1,1 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ELITE CLICKER PRO</title>
+    <style>
+        :root { --neon: #00ff41; }
+        body { background: #000; color: var(--neon); font-family: monospace; margin: 0; text-align: center; overflow: hidden; }
+        .btn { padding: 15px; margin: 8px; border: 2px solid var(--neon); background: transparent; color: var(--neon); cursor: pointer; border-radius: 10px; width: 80%; }
+        #menu, #shop-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 20; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #shop-ui { display: none; z-index: 30; }
+        .score-big { font-size: 3rem; margin: 20px 0; }
+        #game-ui { display: none; height: 100vh; }
+    </style>
+</head>
+<body>
+
+    <div id="menu">
+        <h1>CLICKER PRO</h1>
+        <div>Total Points: <span id="total-score" style="font-size: 2rem;">0</span></div>
+        <button class="btn" onclick="toggleShop(true)">🛒 OPEN SHOP</button>
+        <div style="margin: 20px;">
+            Time: <input type="number" id="time-input" value="10" style="width:50px; background:#111; color:var(--neon); border:1px solid var(--neon);">
+        </div>
+        <button class="btn" onclick="startGame(1)">1 PLAYER</button>
+        <button class="btn" onclick="startGame(2)">2 PLAYERS</button>
+    </div>
+
+    <div id="shop-ui">
+        <h1>SHOP</h1>
+        <button class="btn" onclick="buyUpgrade(1)">P1 Upgrade (50 pts)</button>
+        <button class="btn" onclick="buyUpgrade(2)">P2 Upgrade (50 pts)</button>
+        <button class="btn" style="border-color:red" onclick="toggleShop(false)">CLOSE</button>
+        <p>Current Multipliers: P1:<span id="m1">1</span> | P2:<span id="m2">1</span></p>
+    </div>
+
+    <div id="game-ui">
+        <h2 id="timer">10</h2>
+        <div id="p1-side">
+            <div class="score-big" id="s1">0</div>
+            <button class="btn" onclick="clickP(1)">CLICK P1</button>
+        </div>
+        <div id="p2-side" style="display:none;">
+            <div class="score-big" id="s2">0</div>
+            <button class="btn" onclick="clickP(2)">CLICK P2</button>
+        </div>
+    </div>
+
+    <script>
+        // მონაცემების ჩატვირთვა
+        let p1Score = parseInt(localStorage.getItem('p1Score')) || 0;
+        let p2Score = parseInt(localStorage.getItem('p2Score')) || 0;
+        let p1Mult = parseInt(localStorage.getItem('p1Mult')) || 1;
+        let p2Mult = parseInt(localStorage.getItem('p2Mult')) || 1;
+        let gameActive = false;
+
+        // საწყისი ჩვენება
+        document.getElementById('total-score').innerText = p1Score + p2Score;
+        document.getElementById('m1').innerText = p1Mult;
+        document.getElementById('m2').innerText = p2Mult;
+
+        function saveData() {
+            localStorage.setItem('p1Score', p1Score);
+            localStorage.setItem('p2Score', p2Score);
+            localStorage.setItem('p1Mult', p1Mult);
+            localStorage.setItem('p2Mult', p2Mult);
+        }
+
+        function toggleShop(show) { document.getElementById('shop-ui').style.display = show ? 'flex' : 'none'; }
+
+        function buyUpgrade(p) {
+            let total = p1Score + p2Score;
+            if (total >= 50) {
+                if(p === 1) { p1Mult++; p1Score -= 25; p2Score -= 25; } // თანაბრად აკლებს
+                else { p2Mult++; p1Score -= 25; p2Score -= 25; }
+                saveData();
+                alert("Upgraded!");
+                document.getElementById('m1').innerText = p1Mult;
+                document.getElementById('m2').innerText = p2Mult;
+                document.getElementById('total-score').innerText = p1Score + p2Score;
+            } else alert("Not enough points!");
+        }
+
+        function startGame(m) {
+            gameActive = true;
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            if(m === 2) document.getElementById('p2-side').style.display = 'block';
+            
+            let time = parseInt(document.getElementById('time-input').value);
+            let t = setInterval(() => {
+                time--;
+                document.getElementById('timer').innerText = time;
+                if(time <= 0) {
+                    clearInterval(t);
+                    saveData();
+                    alert("GAME OVER! Points Saved.");
+                    location.reload();
+                }
+            }, 1000);
+        }
+
+        function clickP(p) {
+            if(!gameActive) return;
+            if(p === 1) p1Score += p1Mult; else p2Score += p2Mult;
+            document.getElementById('s1').innerText = p1Score;
+            document.getElementById('s2').innerText = p2Score;
+            document.getElementById('total-score').innerText = p1Score + p2Score;
+        }
+    </script>
+</body>
+</html>
 
